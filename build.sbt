@@ -8,7 +8,7 @@ scalacOptions ++= Seq("-deprecation", "-feature")
 
 conflictManager := ConflictManager.strict
 
-val apacheHttpVersion = "4.3.3"
+val apacheHttpVersion = "4.3.1"
 
 libraryDependencies ++= List(
   ("io.argonaut" %% "argonaut" % "6.0.2")
