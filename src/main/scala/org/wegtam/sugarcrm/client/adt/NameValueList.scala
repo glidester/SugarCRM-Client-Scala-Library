@@ -52,6 +52,13 @@ class NameValueList extends Dynamic {
  * Codecs for the json conversion via argonaut.
  */
 object NameValueList {
+  // Decoding of name value pairs.
+  implicit def NameValuePairDecodeJson: DecodeJson[NameValuePair] =
+    DecodeJson(c => for {
+      name <- (c --\ "name").as[String]
+      value <- (c --\ "value").as[String]
+    } yield new BasicNameValuePair(name, value))
+
   // Encoding of name value pairs.
   // FIXME We shouldn't encode null and boolean values as strings (see `cleanJson`)!
   implicit def NameValuePairEncodeJson: EncodeJson[NameValuePair] =
