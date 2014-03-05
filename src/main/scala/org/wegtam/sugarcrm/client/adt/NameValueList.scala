@@ -1,4 +1,4 @@
-package org.wegtam.sugarcrm.client
+package org.wegtam.sugarcrm.client.adt
 
 import scala.language.dynamics
 import scala.collection.mutable

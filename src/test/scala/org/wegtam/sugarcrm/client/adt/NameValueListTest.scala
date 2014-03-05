@@ -1,4 +1,4 @@
-package org.wegtam.sugarcrm.client
+package org.wegtam.sugarcrm.client.adt
 
 import org.scalatest.{Matchers, FunSpec}
 
@@ -34,7 +34,7 @@ class NameValueListTest extends FunSpec with Matchers {
     }
   }
 
-  describe("toJSON") {
+  describe("asJSON") {
     describe("when executed on an empty name value list") {
       it("should be converted to json properly") {
         val list = new NameValueList()
