@@ -53,12 +53,12 @@ class NameValueList extends Dynamic {
  */
 object NameValueList {
   // Encoding of name value pairs.
-  // FIXME We shouldn't encode null and boolean values as strings!
+  // FIXME We shouldn't encode null and boolean values as strings (see `cleanJson`)!
   implicit def NameValuePairEncodeJson: EncodeJson[NameValuePair] =
     EncodeJson((nvp: NameValuePair) => ("value" := nvp.getValue) ->: ("name" := nvp.getName) ->: jEmptyObject)
 
   implicit def NameValueListEncodeJson: EncodeJson[NameValueList] =
-    EncodeJson((nvl: NameValueList) => ("name_value_list" := nvl.getSugarCompatibleMap) ->: jEmptyObject)
+    EncodeJson((nvl: NameValueList) => nvl.getSugarCompatibleMap.asJson)
 
   /**
    * This method is a workaround for our incomplete json codec.
