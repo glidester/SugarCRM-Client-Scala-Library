@@ -1,11 +1,12 @@
 package org.wegtam.sugarcrm.client
 
 import argonaut._, Argonaut._
+import scalaz._
 import org.wegtam.utils.security.Hash
 import java.net.URL
 
 import org.apache.http.client.fluent.{Form, Request}
-import org.wegtam.sugarcrm.client.adt.{Session, NameValueList}
+import org.wegtam.sugarcrm.client.adt.{Session, NameValueList, Error}
 
 /**
  * This class connects to the sugarcrm rest interface and provides some simple operations.
@@ -60,7 +61,31 @@ class Connection(val baseUrl: URL, val username: String, val userpass: String) {
           .add("rest_data", arguments.toString())
           .build()
       ).execute().returnContent().asString()
-    val result: Option[Json] = Parse.parseOption(response)
-    result.get
+    val result: String \/ Json = Parse.parse(response)
+    if (result.isLeft) {
+      val msg = ~result | ""
+      throw new RuntimeException(s"Couldn't decode json: $msg")
+    }
+    val json = result | jEmptyObject
+    val error: String \/ Error = Parse.decodeEither[Error](json.toString())
+    if (error.isRight) {
+      val details = error | None
+      throw new RuntimeException(s"An error occured using session ${session.id}: $details")
+    }
+    json
+  }
+
+  /**
+   * Search entries within the specified module.
+   *
+   * @param moduleName The name of the module (e.g. "Leads").
+   * @param searchQuery An SQL search query (e.g. the options for `WHERE`).
+   * @return
+   */
+  def getEntries(moduleName: String, searchQuery: String): Json = {
+    val jsonSearch =
+      Json("session" := session.id, "modulename" := moduleName, "query" := searchQuery, "deleted" := 0)
+    val response = query("get_entry_list", jsonSearch)
+    response
   }
 }
