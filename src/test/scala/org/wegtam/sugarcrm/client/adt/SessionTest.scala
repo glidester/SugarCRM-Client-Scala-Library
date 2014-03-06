@@ -7,7 +7,7 @@ import argonaut._, Argonaut._
  * Tests for the sugarcrm api session.
  */
 class SessionTest extends FunSpec with Matchers {
-  describe("asJSON") {
+  describe("asJson") {
     describe("when executed on an empty session") {
       it("should be converted to json properly") {
         val s = new Session("", "", new NameValueList())
