@@ -41,7 +41,7 @@ class Connection(val baseUrl: URL, val username: String, val userpass: String) {
     val id = response.fieldOrNull("id")
     if (id == null)
       throw new RuntimeException("Got no session id from api!")
-    Session(id.toString(), response.fieldOrEmptyString("module_name").toString(), new NameValueList())
+    Session(id.as[String].getOr(""), response.fieldOrEmptyString("module_name").as[String].getOr(""), new NameValueList())
   }
 
   /**
@@ -58,7 +58,7 @@ class Connection(val baseUrl: URL, val username: String, val userpass: String) {
           .add("method", method)
           .add("input_type", "JSON")
           .add("response_type", "JSON")
-          .add("rest_data", arguments.toString())
+          .add("rest_data", arguments.nospaces)
           .build()
       ).execute().returnContent().asString()
     val result: String \/ Json = Parse.parse(response)
