@@ -76,6 +76,21 @@ class Connection(val baseUrl: URL, val username: String, val userpass: String) {
   }
 
   /**
+   * Load a single bean from the api.
+   *
+   * @param moduleName The type of the bean (e.g. "Accounts").
+   * @param id The id of the bean in the sugarcrm database.
+   * @return
+   */
+  def getEntry(moduleName: String, id: String): Json = {
+    val jsonLoadBean =
+      Json("session" := session.id, "modulename" := moduleName, "id" := id)
+    val response = query("get_entry", jsonLoadBean)
+    val list = response.field("entry_list").get.array
+    list.get(0)
+  }
+
+  /**
    * Search entries within the specified module.
    *
    * @param moduleName The name of the module (e.g. "Leads").
