@@ -16,6 +16,12 @@ import org.wegtam.sugarcrm.client.adt.{Session, NameValueList, Error}
  * @param userpass The password for the rest api user.
  */
 class Connection(val baseUrl: URL, val username: String, val userpass: String) {
+  // A list of default modules for the search.
+  val DEFAULT_MODULES = List(
+    "Accounts", "Bugs", "Calls", "Campaigns", "Cases", "Contacts", "Documents",
+    "Emails", "Leads", "Meetings", "Notes", "Opportunities", "Project",
+    "ProspectLists", "Prospects", "Tasks"
+  )
   // The base path to the rest api entry point.
   val REST_API_PATH = "/service/v4_1/rest.php"
   // Create the complete rest api url.
@@ -76,6 +82,20 @@ class Connection(val baseUrl: URL, val username: String, val userpass: String) {
   }
 
   /**
+   * Checks if the session id is still valid.
+   *
+   * @return Returns `true` if the session is valid and `false` otherwise.
+   */
+  def checkSession(): Boolean = {
+    val response = query("seamless_login", Json("session" := session.id))
+    val value = response.jdecode[Int].getOr(0)
+    if (value == 1)
+      true
+    else
+      false
+  }
+
+  /**
    * Load a single bean from the api.
    *
    * @param moduleName The type of the bean (e.g. "Accounts").
@@ -101,6 +121,31 @@ class Connection(val baseUrl: URL, val username: String, val userpass: String) {
     val jsonSearch =
       Json("session" := session.id, "modulename" := moduleName, "query" := searchQuery, "deleted" := 0)
     val response = query("get_entry_list", jsonSearch)
+    response
+  }
+
+  /**
+   * Search entries across multiple modules.
+   *
+   * @param searchQuery A string to search for.
+   * @param modules A list of modules which shall be searched. If left empty the default modules are searched.
+   * @return
+   */
+  def search(searchQuery: String, maxResults: Int = 100, modules: List[String] = List()): Json = {
+    val searchModules: List[String] = if (modules.isEmpty) DEFAULT_MODULES else modules
+    val jsonSearch =
+      Json(
+        "session" := session.id,
+        "search_string" := searchQuery,
+        "modules" := searchModules,
+        "offset" := 0,
+        "max_results" := maxResults,
+        "assigned_user_id" := jEmptyString,
+        "select_fields" := jEmptyArray,
+        "unified_search_only" := false,
+        "favorites" := false
+      )
+    val response = query("search_by_module", jsonSearch)
     response
   }
 }
