@@ -51,6 +51,15 @@ class Connection(val baseUrl: URL, val username: String, val userpass: String) {
   }
 
   /**
+   * Logout and disable the current session.
+   * Attention! This means that you'll have no further use for the connection object and you have to create a new one!
+   *
+   */
+  def logout(): Unit = {
+    query("logout", Json("session" := session.id))
+  }
+
+  /**
    * Query the sugarcrm rest api using the given method and arguments.
    *
    * @param method The name of the api method (e.g. "login").
