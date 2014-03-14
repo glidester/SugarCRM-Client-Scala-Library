@@ -18,4 +18,7 @@ See the [build.sbt](build.sbt) file for details.
 
 ## Usage
 
-**TODO**
+    val sugar = new Connection(new URL("http://crm.example.com/sugarcrm"), "user", "password")
+    val entries = sugar.getEntries("Accounts", """accounts.name LIKE "%mining%"""")
+
+
