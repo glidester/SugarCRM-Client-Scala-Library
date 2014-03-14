@@ -134,6 +134,18 @@ class Connection(val baseUrl: URL, val username: String, val userpass: String) {
   }
 
   /**
+   * Returns a list of available modules. The list can be filtered. Per default the filter is set
+   * to `all`.
+   *
+   * @param filter Filter the modules. Possible values are `default`, `mobile` and `all`.
+   * @return
+   */
+  def getModules(filter: String = "all"): Json = {
+    val response = query("get_available_modules", Json("session" := session.id, "filter" := filter))
+    response
+  }
+
+  /**
    * Search entries across multiple modules.
    *
    * @param searchQuery A string to search for.
