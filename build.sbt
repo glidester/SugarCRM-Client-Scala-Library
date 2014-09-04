@@ -1,6 +1,6 @@
 name := "SugarCRM-Client"
 
-version := "0.5.0"
+version := "0.5.1"
 
 description := "Provides a simple wrapper for the sugarcrm api."
 
@@ -16,14 +16,14 @@ incOptions := incOptions.value.withNameHashing(true)
 
 conflictManager := ConflictManager.strict
 
-val apacheHttpVersion = "4.3.1"
+val apacheHttpVersion = "4.3.5"
 
 libraryDependencies ++= List(
   ("io.argonaut" %% "argonaut" % "6.0.4")
     .exclude("org.scala-lang", "scala-library"),
   "org.apache.httpcomponents" % "httpclient" % apacheHttpVersion,
   "org.apache.httpcomponents" % "fluent-hc" % apacheHttpVersion,
-  ("org.scalatest" %% "scalatest" % "2.1.7" % "test")
-    .exclude("org.scala-lang", "scala-library")
+  ("org.scalatest" %% "scalatest" % "2.2.2" % "test")
+    .exclude("org.scala-lang.modules", "*")
 )
 
