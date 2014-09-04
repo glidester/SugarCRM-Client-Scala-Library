@@ -1,6 +1,12 @@
+import AssemblyKeys._
+
+assemblySettings
+
 name := "SugarCRM-Client"
 
 version := "0.5.1"
+
+organization := "org.wegtam"
 
 description := "Provides a simple wrapper for the sugarcrm api."
 
