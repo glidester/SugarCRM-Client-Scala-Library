@@ -4,7 +4,7 @@ assemblySettings
 
 name := "SugarCRM-Client"
 
-version := "0.5.1"
+version := "0.5.2"
 
 organization := "org.wegtam"
 
