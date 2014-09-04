@@ -1,10 +1,18 @@
 name := "SugarCRM-Client"
 
-version := "1.0.0"
+version := "0.5.0"
 
-crossScalaVersions := Seq("2.10.4", "2.11.1")
+description := "Provides a simple wrapper for the sugarcrm api."
+
+scalaVersion := "2.11.2"
+
+crossScalaVersions := Seq("2.10.4", "2.11.2")
 
 scalacOptions ++= Seq("-deprecation", "-feature")
+
+javacOptions ++= Seq("-encoding", "UTF-8")
+
+incOptions := incOptions.value.withNameHashing(true)
 
 conflictManager := ConflictManager.strict
 
