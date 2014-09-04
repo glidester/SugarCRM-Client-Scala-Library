@@ -4,7 +4,7 @@ assemblySettings
 
 name := "SugarCRM-Client"
 
-version := "0.5.3"
+version := "0.5.4"
 
 organization := "org.wegtam"
 
@@ -31,5 +31,6 @@ libraryDependencies ++= List(
   "org.apache.httpcomponents" % "fluent-hc" % apacheHttpVersion,
   ("org.scalatest" %% "scalatest" % "2.2.2" % "test")
     .exclude("org.scala-lang.modules", "*")
+    .exclude("org.scala-lang", "scala-library")
 )
 
