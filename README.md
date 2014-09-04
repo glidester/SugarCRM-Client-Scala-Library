@@ -10,7 +10,7 @@ The source of this library is released under the BSD license (see [LICENSE](LICE
 
 ## Requirements
 
-* [Scala](http://scala-lang.org/) 2.10
+* [Scala](http://scala-lang.org/) 2.10 or 2.11
 * [Argonaut](http://argonaut.io/)
 * [Apache Http Components](http://hc.apache.org)
 
