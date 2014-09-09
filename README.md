@@ -1,6 +1,7 @@
 # SugarCRM Client Scala Library
 
-[![Build Status](https://travis-ci.org/wegtam/SugarCRM-Client-Scala-Library.png?branch=master)](https://travis-ci.org/wegtam/SugarCRM-Client-Scala-Library)
+[![Build Status](https://travis-ci.org/wegtam/SugarCRM-Client-Scala-Library.svg?branch=master)](https://travis-ci.org/wegtam/SugarCRM-Client-Scala-Library)
+[![BSD License](http://img.shields.io/badge/license-bsd-green.svg)](http://opensource.org/licenses/BSD-3-Clause)
 
 This library intends to provide a simple interface for the rest api of sugarcrm.
 
