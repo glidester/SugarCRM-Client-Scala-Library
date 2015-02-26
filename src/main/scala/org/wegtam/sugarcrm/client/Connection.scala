@@ -43,7 +43,7 @@ class Connection(val baseUrl: URL, val username: String, val userpass: String) {
       Json("user_name" := username, "password" := Hash.MD5(userpass), "version" := "1.0")
     val jsonLogin: Json =
       Json("user_auth" := jsonUserAuth, "application_name" := "SugarCRM-Client Scala Library")
-    val response = query("login", jsonLogin)
+    val response = query("login", jsonLogin.nospaces)
     val id = response.fieldOrNull("id")
     if (id == null)
       throw new RuntimeException("Got no session id from api!")
@@ -56,7 +56,14 @@ class Connection(val baseUrl: URL, val username: String, val userpass: String) {
    *
    */
   def logout(): Unit = {
-    query("logout", Json("session" := session.id))
+    query("logout", jsonArgsSerializer(Json()))
+  }
+
+  private def jsonArgsSerializer(arguments: Json, moduleName: Option[String] = None): String = {
+    val sessionPart = s"""{"session":"${session.id}""""
+    val modulePart = if (moduleName.isDefined) { s""","module_name":"${moduleName.get}","""} else ""
+
+    sessionPart + modulePart + arguments.nospaces.substring(1)
   }
 
   /**
@@ -66,16 +73,18 @@ class Connection(val baseUrl: URL, val username: String, val userpass: String) {
    * @param arguments The arguments for the api call.
    * @return The json returned by the api.
    */
-  def query(method: String, arguments: Json): Json = {
+  def query(method: String, arguments: String): Json = {
+
     val response = Request.Post(restApiUrl)
       .bodyForm(
         Form.form()
           .add("method", method)
           .add("input_type", "JSON")
           .add("response_type", "JSON")
-          .add("rest_data", arguments.nospaces)
+          .add("rest_data", arguments)
           .build()
       ).execute().returnContent().asString()
+
     val result: String \/ Json = Parse.parse(response)
     if (result.isLeft) {
       val msg = ~result | ""
@@ -96,7 +105,7 @@ class Connection(val baseUrl: URL, val username: String, val userpass: String) {
    * @return Returns `true` if the session is valid and `false` otherwise.
    */
   def checkSession(): Boolean = {
-    val response = query("seamless_login", Json("session" := session.id))
+    val response = query("seamless_login", jsonArgsSerializer(Json()))
     val value = response.jdecode[Int].getOr(0)
     if (value == 1)
       true
@@ -113,8 +122,8 @@ class Connection(val baseUrl: URL, val username: String, val userpass: String) {
    */
   def getEntry(moduleName: String, id: String): Json = {
     val jsonLoadBean =
-      Json("session" := session.id, "modulename" := moduleName, "id" := id)
-    val response = query("get_entry", jsonLoadBean)
+      Json("id" := id)
+    val response = query("get_entry", jsonArgsSerializer(jsonLoadBean, Some(moduleName)))
     val list = response.field("entry_list").get.array
     list.get(0)
   }
@@ -124,12 +133,15 @@ class Connection(val baseUrl: URL, val username: String, val userpass: String) {
    *
    * @param moduleName The name of the module (e.g. "Leads").
    * @param searchQuery An SQL search query (e.g. the options for `WHERE`).
-   * @return
+   * @param selectFields A List of field names to return (e.g. the options for `SELECT`).
+   * @param orderBy Define the sort order (e.g. the options for `ORDER BY`).
+   * @param offset The record offset from which to start.
+   *@return
    */
-  def getEntries(moduleName: String, searchQuery: String): Json = {
+  def getEntries(moduleName: String, searchQuery: String, selectFields: List[String] = List(), orderBy: String = "", offset: Int = 0): Json = {
     val jsonSearch =
-      Json("session" := session.id, "modulename" := moduleName, "query" := searchQuery, "deleted" := 0)
-    val response = query("get_entry_list", jsonSearch)
+      Json("query" := searchQuery, "select_fields" := selectFields, "deleted" := 0, "order_by":= orderBy, "offset" := offset)
+    val response = query("get_entry_list", jsonArgsSerializer(jsonSearch, Some(moduleName)))
     response
   }
 
@@ -141,7 +153,7 @@ class Connection(val baseUrl: URL, val username: String, val userpass: String) {
    * @return
    */
   def getModules(filter: String = "all"): Json = {
-    val response = query("get_available_modules", Json("session" := session.id, "filter" := filter))
+    val response = query("get_available_modules", jsonArgsSerializer(Json("filter" := filter)))
     response
   }
 
@@ -156,7 +168,6 @@ class Connection(val baseUrl: URL, val username: String, val userpass: String) {
     val searchModules: List[String] = if (modules.isEmpty) DEFAULT_MODULES else modules
     val jsonSearch =
       Json(
-        "session" := session.id,
         "search_string" := searchQuery,
         "modules" := searchModules,
         "offset" := 0,
@@ -166,7 +177,7 @@ class Connection(val baseUrl: URL, val username: String, val userpass: String) {
         "unified_search_only" := false,
         "favorites" := false
       )
-    val response = query("search_by_module", jsonSearch)
+    val response = query("search_by_module", jsonArgsSerializer(jsonSearch))
     response
   }
 }
