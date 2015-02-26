@@ -1,12 +1,14 @@
 package org.wegtam.sugarcrm.client
 
-import argonaut._, Argonaut._
+import argonaut._, argonaut.Argonaut._
 import scalaz._
 import org.wegtam.utils.security.Hash
 import java.net.URL
 
 import org.apache.http.client.fluent.{Form, Request}
 import org.wegtam.sugarcrm.client.adt.{Session, NameValueList, Error}
+import scala.Some
+import scala.Tuple2
 
 /**
  * This class connects to the sugarcrm rest interface and provides some simple operations.
@@ -75,6 +77,8 @@ class Connection(val baseUrl: URL, val username: String, val userpass: String) {
    */
   def query(method: String, arguments: String): Json = {
 
+    println(s"arguments= $arguments")
+
     val response = Request.Post(restApiUrl)
       .bodyForm(
         Form.form()
@@ -142,6 +146,41 @@ class Connection(val baseUrl: URL, val username: String, val userpass: String) {
     val jsonSearch =
       Json("query" := searchQuery, "select_fields" := selectFields, "deleted" := 0, "order_by":= orderBy, "offset" := offset)
     val response = query("get_entry_list", jsonArgsSerializer(jsonSearch, Some(moduleName)))
+    response
+  }
+
+  case class NameValueList2(items: Seq[Tuple2[Tuple2[String,String],Tuple2[String,String]]])
+
+  implicit def NameValueListEncodeJson: EncodeJson[NameValueList2] = {
+    EncodeJson((p: NameValueList2) => {
+      val jsonSeq =  p.items.foldLeft[Seq[Json]](Seq[Json]())((empty,item) => empty ++ Seq((item._2._1 := item._2._2) ->: (item._1._1 := item._1._2) ->: jEmptyObject))
+      jArrayElemets(jsonSeq : _*)
+    })
+  }
+
+  def setEntry2(moduleName: String, nameValList: Seq[Tuple2[String,String]]): Json = {
+
+    val formattedNameValueList = nameValList.map( i => (("name",i._1),("value",i._2)))
+
+    println(s"formattedNameValueList = $formattedNameValueList")
+
+    val nameValueList = NameValueList2(formattedNameValueList)
+
+    //val pp = nn.items.foldLeft[Json](jEmptyObject)((empty,item) => (item._1._1 := item._1._2) ->: (item._2._1 := item._2._2) ->: empty)*/
+
+    val json = Json("name_value_list" := nameValueList)
+
+    println(s"json = $json")
+
+    /*val response = query("set_entry", jsonArgsSerializer(json, Some(moduleName)))
+    response*/
+
+    json
+  }
+
+  def setEntry(moduleName: String, nameValList: NameValueList): Json = {
+    val json = Json("name_value_list" := nameValList)
+    val response = query("set_entry", jsonArgsSerializer(json, Some(moduleName)))
     response
   }
 
