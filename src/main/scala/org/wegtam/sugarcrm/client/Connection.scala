@@ -77,7 +77,7 @@ class Connection(val baseUrl: URL, val username: String, val userpass: String) {
    */
   def query(method: String, arguments: String): Json = {
 
-    println(s"arguments= $arguments")
+    //println(s"arguments= $arguments")
 
     val response = Request.Post(restApiUrl)
       .bodyForm(
