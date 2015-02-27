@@ -149,34 +149,41 @@ class Connection(val baseUrl: URL, val username: String, val userpass: String) {
     response
   }
 
-  case class NameValueList2(items: Seq[Tuple2[Tuple2[String,String],Tuple2[String,String]]])
+  /*implicit def StringValueItemEncodeJson: EncodeJson[StringValueItem] = EncodeJson((p: StringValueItem) =>  ("name" := p.name) ->: ("value" := p.value) ->: jEmptyObject)
+  implicit def NumberValueItemEncodeJson: EncodeJson[NumberValueItem] = EncodeJson((p: NumberValueItem) =>  ("name" := p.name) ->: ("value" := p.value.toInt) ->: jEmptyObject)
+  implicit def BooleanValueItemEncodeJson: EncodeJson[BooleanValueItem] = EncodeJson((p: BooleanValueItem) =>  ("name" := p.name) ->: ("value" := p.value.toBoolean) ->: jEmptyObject)
 
-  implicit def NameValueListEncodeJson: EncodeJson[NameValueList2] = {
-    EncodeJson((p: NameValueList2) => {
-      val jsonSeq =  p.items.foldLeft[Seq[Json]](Seq[Json]())((empty,item) => empty ++ Seq((item._2._1 := item._2._2) ->: (item._1._1 := item._1._2) ->: jEmptyObject))
+  implicit def ValueItemEncodeJson: EncodeJson[ValueItem] = EncodeJson((p: ValueItem) => {
+    val oo = p match {
+      case x: StringValueItem => x.asJson
+      case y: NumberValueItem => y.asJson
+      case z: BooleanValueItem => z.asJson
+      //case _ => jEmptyObject
+    }
+
+    jEmptyObject
+  })
+
+  case class NameValueList2(items: Seq[ValueItem])
+
+  implicit def SeqValueItemEncodeJson: EncodeJson[Seq[ValueItem]] = {
+    EncodeJson((p: Seq[ValueItem]) => {
+      val jsonSeq =  p.foldLeft[Seq[Json]](Seq[Json]())((empty,item) => empty ++ Seq(item.asJson))
       jArrayElemets(jsonSeq : _*)
     })
   }
 
-  def setEntry2(moduleName: String, nameValList: Seq[Tuple2[String,String]]): Json = {
+  def setEntry2(moduleName: String, nameValList: Seq[ValueItem]): Json = {
 
-    val formattedNameValueList = nameValList.map( i => (("name",i._1),("value",i._2)))
-
-    println(s"formattedNameValueList = $formattedNameValueList")
-
-    val nameValueList = NameValueList2(formattedNameValueList)
-
-    //val pp = nn.items.foldLeft[Json](jEmptyObject)((empty,item) => (item._1._1 := item._1._2) ->: (item._2._1 := item._2._2) ->: empty)*/
-
-    val json = Json("name_value_list" := nameValueList)
+    val json = Json("name_value_list" := nameValList)
 
     println(s"json = $json")
 
-    /*val response = query("set_entry", jsonArgsSerializer(json, Some(moduleName)))
-    response*/
+    //val response = query("set_entry", jsonArgsSerializer(json, Some(moduleName)))
+    //response
 
     json
-  }
+  }*/
 
   def setEntry(moduleName: String, nameValList: NameValueList): Json = {
     val json = Json("name_value_list" := nameValList)
@@ -220,3 +227,15 @@ class Connection(val baseUrl: URL, val username: String, val userpass: String) {
     response
   }
 }
+
+/*
+object Connection {
+  trait ValueItem {
+    def name: String
+    def value: String
+  }
+
+  case class StringValueItem(name: String, value: String) extends ValueItem
+  case class NumberValueItem(name: String, value: String) extends ValueItem
+  case class BooleanValueItem(name: String, value: String) extends ValueItem
+}*/
