@@ -1,10 +1,10 @@
 package org.wegtam.sugarcrm.model
 
-import argonaut.Cursor
+import argonaut.{Json, Cursor}
 import org.wegtam.sugarcrm.client.adt.NameValueList
 
 trait Contact {
-  def id: String
+  def id: Option[String]
   def deleted: Boolean
   def createdBy: String
   def dateEntered: String
@@ -25,7 +25,7 @@ trait Contact {
   def doNotCall: Boolean
 }
 
-case class CRM_Contact(id: String, deleted: Boolean, dateEntered: String, createdBy: String, modifiedUserId: String, dateModified: String,
+case class CRM_Contact(id: Option[String], deleted: Boolean, dateEntered: String, createdBy: String, modifiedUserId: String, dateModified: String,
                        salutation: String, firstName: String, lastName: String,
                        email1: String, email2: String,
                        phoneHome: String, phoneMobile: String,
@@ -33,6 +33,10 @@ case class CRM_Contact(id: String, deleted: Boolean, dateEntered: String, create
                       ) extends Contact
 
 object Contact {
+  def parseJson(json: Json) = {
+    Contact.parseContact(Some(json.cursor))
+  }
+
   def parseContact(optCurso: Option[Cursor]): Option[Contact] = {
     if (optCurso.isEmpty)
       None
@@ -60,32 +64,32 @@ object Contact {
         description <- getValue("description",nameValueList)
         doNotCall <- getValue("do_not_call",nameValueList)
       } yield
-        CRM_Contact(id,deleted.equals("1"),dateEntered,createdBy,modifiedUserId,dateModified,salutation,firstName,lastName,email1,email2,phoneHome,phoneMobile,
+        CRM_Contact(Some(id),deleted.equals("1"),dateEntered,createdBy,modifiedUserId,dateModified,salutation,firstName,lastName,email1,email2,phoneHome,phoneMobile,
           description,doNotCall.equals("1"))
     }
   }
 
   def buildNameValueList(contact: Contact):NameValueList = {
     val values = new NameValueList()
-    values.updateDynamic("id")(contact.id)
+    if (contact.id.isDefined) values.updateDynamic("id")(contact.id)
     values.updateDynamic("deleted")(if (contact.deleted) "1" else "0")
-    values.updateDynamic("dateEntered")(contact.dateEntered)
-    values.updateDynamic("createdBy")(contact.createdBy)
-    values.updateDynamic("modifiedUserId")(contact.modifiedUserId)
-    values.updateDynamic("dateModified")(contact.dateModified)
+    values.updateDynamic("date_entered")(contact.dateEntered)
+    values.updateDynamic("created_by")(contact.createdBy)
+    values.updateDynamic("modified_user_id")(contact.modifiedUserId)
+    values.updateDynamic("date_modified")(contact.dateModified)
 
     values.updateDynamic("salutation")(contact.salutation)
-    values.updateDynamic("firstName")(contact.firstName)
-    values.updateDynamic("lastName")(contact.lastName)
+    values.updateDynamic("first_name")(contact.firstName)
+    values.updateDynamic("last_name")(contact.lastName)
 
     values.updateDynamic("email1")(contact.email1)
     values.updateDynamic("email2")(contact.email2)
 
-    values.updateDynamic("phoneHome")(contact.phoneHome)
-    values.updateDynamic("phoneMobile")(contact.phoneMobile)
+    values.updateDynamic("phone_home")(contact.phoneHome)
+    values.updateDynamic("phone_mobile")(contact.phoneMobile)
 
     values.updateDynamic("description")(contact.description)
-    values.updateDynamic("doNotCall")(if (contact.doNotCall) "1" else "0")
+    values.updateDynamic("do_not_call")(if (contact.doNotCall) "1" else "0")
 
     values
   }

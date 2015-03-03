@@ -23,3 +23,7 @@ See the [build.sbt](build.sbt) file for details.
     val entries = sugar.getEntries("Accounts", """accounts.name LIKE "%mining%"""")
 
 
+## Testing
+Start sbt specifying the connection details to a test sugarcrm installation e.g.:
+
+    sbt -Durl="http://sugarcrm.company.co.uk" -Dusername=User -Dpassword=password
