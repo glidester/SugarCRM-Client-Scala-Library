@@ -46,6 +46,16 @@ class ConnectionTest extends FunSpec with Matchers {
       val newContact = getTestCRMConnection.setEntry("Contacts", values)
       println(s"newContact = $newContact")*/
 
+      val values = new NameValueList()
+      values.updateDynamic("first_name")("Created By New Webhook")
+      values.updateDynamic("description")("Again")
+      values.updateDynamic("id")("59fdcf2f-a316-d6fb-77d7-54f700405a4c")
+
+      println(s"nameValList = ${values.getSugarCompatibleMap}")
+
+      val newContact = getTestCRMConnection.setEntry("Contacts", values)
+      println(s"newContact = $newContact")
+
 
       /*val newContact = getTestCRMConnection.setEntry2("Contacts", Seq(StringValueItem("first_name","Created By New Webhook"),StringValueItem("last_name","Created By New Webhook"),StringValueItem("email1","test@test.com")))
       println(s"newContact = $newContact")*/

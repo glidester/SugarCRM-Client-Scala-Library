@@ -7,7 +7,6 @@ trait Contact {
   def id: Option[String]
   def deleted: Boolean
   def createdBy: String
-  def dateEntered: String
   def modifiedUserId: String
   def dateModified: String
 
@@ -25,7 +24,7 @@ trait Contact {
   def doNotCall: Boolean
 }
 
-case class CRM_Contact(id: Option[String], deleted: Boolean, dateEntered: String, createdBy: String, modifiedUserId: String, dateModified: String,
+case class CRM_Contact(id: Option[String], deleted: Boolean, createdBy: String, modifiedUserId: String, dateModified: String,
                        salutation: String, firstName: String, lastName: String,
                        email1: String, email2: String,
                        phoneHome: String, phoneMobile: String,
@@ -41,12 +40,40 @@ object Contact {
     if (optCurso.isEmpty)
       None
     else {
-      for {
-        nameValueList <- (optCurso.get --\ "name_value_list")
+      val id = (optCurso.get --\ "id").get.focus.as[String].toOption
 
-        id <- getValue("id",nameValueList)
+      val valueListName = for {
+        cursor <- optCurso
+        fields <- cursor.fields
+      } yield {
+        if (fields.contains("entry_list")) "entry_list" else "name_value_list"
+      }
+
+      val nameValueList = (optCurso.get --\ valueListName.getOrElse("name_value_list")).get
+
+      /* For debugging
+      getValue("deleted",nameValueList).get
+      getValue("created_by",nameValueList).get
+      getValue("modified_user_id",nameValueList).get
+
+      getValue("salutation",nameValueList).get
+      getValue("first_name",nameValueList).get
+      getValue("last_name",nameValueList).get
+
+      getValue("email1",nameValueList).get
+      getValue("email2",nameValueList).get
+
+      getValue("phone_home",nameValueList).get
+      getValue("phone_mobile",nameValueList).get
+
+      getValue("description",nameValueList).get
+      getValue("do_not_call",nameValueList).get*/
+
+      for {
+        nameValueList <- (optCurso.get --\ valueListName.getOrElse("name_value_list"))
+
         deleted <- getValue("deleted",nameValueList)
-        dateEntered <- getValue("date_entered",nameValueList)
+
         createdBy <- getValue("created_by",nameValueList)
         modifiedUserId <- getValue("modified_user_id",nameValueList)
         dateModified <- getValue("date_modified",nameValueList)
@@ -64,16 +91,16 @@ object Contact {
         description <- getValue("description",nameValueList)
         doNotCall <- getValue("do_not_call",nameValueList)
       } yield
-        CRM_Contact(Some(id),deleted.equals("1"),dateEntered,createdBy,modifiedUserId,dateModified,salutation,firstName,lastName,email1,email2,phoneHome,phoneMobile,
+        CRM_Contact(id,deleted.equals("1"),createdBy,modifiedUserId,dateModified,salutation,firstName,lastName,email1,email2,phoneHome,phoneMobile,
           description,doNotCall.equals("1"))
     }
   }
 
   def buildNameValueList(contact: Contact):NameValueList = {
     val values = new NameValueList()
-    if (contact.id.isDefined) values.updateDynamic("id")(contact.id)
+
+    if (contact.id.isDefined) values.updateDynamic("id")(contact.id.get)
     values.updateDynamic("deleted")(if (contact.deleted) "1" else "0")
-    values.updateDynamic("date_entered")(contact.dateEntered)
     values.updateDynamic("created_by")(contact.createdBy)
     values.updateDynamic("modified_user_id")(contact.modifiedUserId)
     values.updateDynamic("date_modified")(contact.dateModified)

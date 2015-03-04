@@ -10,9 +10,11 @@ package object model {
     for {
       fieldObject <- (cursor --\ fieldName)
       optFieldValue <- (fieldObject --\ "value")
-      fieldValue <- optFieldValue.focus.as[String].toOption
     } yield {
-      fieldValue
+      val value = optFieldValue.focus.toString
+
+      //remove quote marks from strings
+      if (value.length > 2) value.substring(1,value.length-1) else value
     }
   }
 
