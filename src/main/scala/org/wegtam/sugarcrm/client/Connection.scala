@@ -61,11 +61,13 @@ class Connection(val baseUrl: URL, val username: String, val userpass: String) {
     query("logout", jsonArgsSerializer(Json()))
   }
 
-  private def jsonArgsSerializer(arguments: Json, moduleName: Option[String] = None): String = {
-    val sessionPart = s"""{"session":"${session.id}""""
-    val modulePart = if (moduleName.isDefined) { s""","module_name":"${moduleName.get}","""} else ""
+  private def defineSessionPart(): String = s"""{"session":"${session.id}""""
 
-    sessionPart + modulePart + arguments.nospaces.substring(1)
+  private def defineModulePart(moduleName: Option[String] = None): String =
+    if (moduleName.isDefined) { s""","module_name":"${moduleName.get}","""} else ""
+
+  private def jsonArgsSerializer(arguments: Json, moduleName: Option[String] = None): String = {
+    defineSessionPart() + defineModulePart(moduleName) + arguments.nospaces.substring(1)
   }
 
   /**
@@ -77,9 +79,7 @@ class Connection(val baseUrl: URL, val username: String, val userpass: String) {
    */
   def query(method: String, arguments: String): Json = {
 
-    //println(s"arguments= $arguments")
-
-    val response = Request.Post(restApiUrl)
+    val request = Request.Post(restApiUrl)
       .bodyForm(
         Form.form()
           .add("method", method)
@@ -87,7 +87,9 @@ class Connection(val baseUrl: URL, val username: String, val userpass: String) {
           .add("response_type", "JSON")
           .add("rest_data", arguments)
           .build()
-      ).execute().returnContent().asString()
+      )
+    
+    val response = request.execute().returnContent().asString()
 
     val result: String \/ Json = Parse.parse(response)
     if (result.isLeft) {
@@ -98,7 +100,7 @@ class Connection(val baseUrl: URL, val username: String, val userpass: String) {
     val error: String \/ Error = Parse.decodeEither[Error](json.toString())
     if (error.isRight) {
       val details = error | None
-      throw new RuntimeException(s"An error occured using session ${session.id}: $details")
+      throw new RuntimeException(s"An error occurred using session ${session.id}: $details")
     }
     json
   }
@@ -188,6 +190,18 @@ class Connection(val baseUrl: URL, val username: String, val userpass: String) {
   def setEntry(moduleName: String, nameValList: NameValueList): Json = {
     val json = Json("name_value_list" := nameValList)
     val response = query("set_entry", jsonArgsSerializer(json, Some(moduleName)))
+    response
+  }
+
+  def setRelationship(moduleName: String, moduleEntityId: String, linkFieldToModule: String, linkedToModuleEntityId: String, deleted: Boolean): Json = {
+    val jsonArgs = defineSessionPart() + defineModulePart(Some(moduleName)) + s""""module_id":"${moduleEntityId}","link_field_name":"${linkFieldToModule}","related_ids":["${linkedToModuleEntityId}"],"name_value_list":{},"deleted":""" + (if (deleted) 1 else 0) + """}"""
+    val response = query("set_relationship", jsonArgs)
+    response
+  }
+
+  def call(method: String, moduleName: String, nameValList: NameValueList): Json = {
+    val json = Json("name_value_list" := nameValList)
+    val response = query(method, jsonArgsSerializer(json, Some(moduleName)))
     response
   }
 
