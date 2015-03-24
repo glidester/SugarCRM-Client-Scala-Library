@@ -1,8 +1,7 @@
 package org.wegtam.sugarcrm.model
 
 import org.scalatest.{Matchers, FunSpec}
-import org.wegtam.sugarcrm.client.adt.NameValueList
-import argonaut.{Parse, Json}
+import argonaut.{Parse}
 import org.wegtam.sugarcrm._
 
 class ContactSpec extends FunSpec with Matchers {

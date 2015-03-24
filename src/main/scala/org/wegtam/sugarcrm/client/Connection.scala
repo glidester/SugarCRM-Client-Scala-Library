@@ -88,7 +88,7 @@ class Connection(val baseUrl: URL, val username: String, val userpass: String) {
           .add("rest_data", arguments)
           .build()
       )
-    
+
     val response = request.execute().returnContent().asString()
 
     val result: String \/ Json = Parse.parse(response)
@@ -100,7 +100,7 @@ class Connection(val baseUrl: URL, val username: String, val userpass: String) {
     val error: String \/ Error = Parse.decodeEither[Error](json.toString())
     if (error.isRight) {
       val details = error | None
-      throw new RuntimeException(s"An error occurred using session ${session.id}: $details")
+      throw new RuntimeException(s"An error occurred using session ${session}: $details")
     }
     json
   }
