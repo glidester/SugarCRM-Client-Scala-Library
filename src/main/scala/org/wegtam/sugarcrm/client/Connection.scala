@@ -222,8 +222,6 @@ class Connection(val baseUrl: URL, val username: String, val userpass: String) {
    */
   def getRelationships(moduleName: String, moduleEntityId: String, linkFieldToModule: String, whereClause: String, related_fields: Seq[String], deleted: Boolean): Json = {
     val jsonArgs = defineSessionPart() + defineModulePart(Some(moduleName)) + s""""module_id":"${moduleEntityId}","link_field_name":"${linkFieldToModule}","related_module_query":"$whereClause","related_fields":[${related_fields.mkString("\"","\",\"","\"")}],"deleted":""" + (if (deleted) 1 else 0) + """}"""
-    println(jsonArgs)
-
     val response = query("get_relationships", jsonArgs)
     response
   }
