@@ -203,8 +203,8 @@ class Connection(val baseUrl: URL, val username: String, val userpass: String) {
    * @param deleted Set to 1 if you want to delete an existing relationship
    * @return
    */
-  def setRelationship(moduleName: String, moduleEntityId: String, linkFieldToModule: String, linkedToModuleEntityId: String, deleted: Boolean): Json = {
-    val jsonArgs = defineSessionPart() + defineModulePart(Some(moduleName)) + s""""module_id":"${moduleEntityId}","link_field_name":"${linkFieldToModule}","related_ids":["${linkedToModuleEntityId}"],"name_value_list":{},"deleted":""" + (if (deleted) 1 else 0) + """}"""
+  def setRelationship(moduleName: String, moduleEntityId: String, linkFieldToModule: String, linkedToModuleEntityId: Seq[String], deleted: Boolean): Json = {
+    val jsonArgs = defineSessionPart() + defineModulePart(Some(moduleName)) + s""""module_id":"${moduleEntityId}","link_field_name":"${linkFieldToModule}","related_ids":[${linkedToModuleEntityId.mkString("\"","\",\"","\"")}],"name_value_list":{},"deleted":""" + (if (deleted) 1 else 0) + """}"""
     val response = query("set_relationship", jsonArgs)
     response
   }
