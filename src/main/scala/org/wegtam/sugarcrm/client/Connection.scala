@@ -193,9 +193,38 @@ class Connection(val baseUrl: URL, val username: String, val userpass: String) {
     response
   }
 
+  /**
+   * Define a relationship between two entities of related modules
+   *
+   * @param moduleName The name of the module that has the relationship with something
+   * @param moduleEntityId The individual entity of the module that you are interested in creating a relationship to
+   * @param linkFieldToModule The relationship field name as defined in the Admin->Studio->Module->Relationships GUI
+   * @param linkedToModuleEntityId The individual entity on the other side of the relationship that you wan to link to
+   * @param deleted Set to 1 if you want to delete an existing relationship
+   * @return
+   */
   def setRelationship(moduleName: String, moduleEntityId: String, linkFieldToModule: String, linkedToModuleEntityId: String, deleted: Boolean): Json = {
     val jsonArgs = defineSessionPart() + defineModulePart(Some(moduleName)) + s""""module_id":"${moduleEntityId}","link_field_name":"${linkFieldToModule}","related_ids":["${linkedToModuleEntityId}"],"name_value_list":{},"deleted":""" + (if (deleted) 1 else 0) + """}"""
     val response = query("set_relationship", jsonArgs)
+    response
+  }
+
+  /**
+   * Return all related entities of a given moduleEntityId
+   *
+   * @param moduleName The name of the module that has the relationship with something
+   * @param moduleEntityId The individual entity of the module that you are interested in finding the relationship of
+   * @param linkFieldToModule The relationship field name as defined in the Admin->Studio->Module->Relationships GUI
+   * @param whereClause An optional additional SQL filter to apply (don't include the keyword 'where')
+   * @param related_fields The fields of the related entity that you want to retrieve (MUST SPECIFY AT LEAST ONE TO AVOID BUG)
+   * @param deleted Return deleted or undeleted related entities
+   * @return
+   */
+  def getRelationships(moduleName: String, moduleEntityId: String, linkFieldToModule: String, whereClause: String, related_fields: Seq[String], deleted: Boolean): Json = {
+    val jsonArgs = defineSessionPart() + defineModulePart(Some(moduleName)) + s""""module_id":"${moduleEntityId}","link_field_name":"${linkFieldToModule}","related_module_query":"$whereClause","related_fields":[${related_fields.mkString("\"","\",\"","\"")}],"deleted":""" + (if (deleted) 1 else 0) + """}"""
+    println(jsonArgs)
+
+    val response = query("get_relationships", jsonArgs)
     response
   }
 
