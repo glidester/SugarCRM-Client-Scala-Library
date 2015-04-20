@@ -33,7 +33,7 @@ class Connection(val baseUrl: URL, val username: String, val userpass: String) {
     else
       baseUrl.getProtocol + "://" + baseUrl.getHost + baseUrl.getPath + REST_API_PATH
   // We need to store the session information.
-  val session: Session = login()
+  var session: Session = login()
 
   /**
    * Login via the rest api and return the session.
@@ -75,9 +75,10 @@ class Connection(val baseUrl: URL, val username: String, val userpass: String) {
    *
    * @param method The name of the api method (e.g. "login").
    * @param arguments The arguments for the api call.
+   * @param reattemptCount The number of times this call has been previously attempted
    * @return The json returned by the api.
    */
-  def query(method: String, arguments: String): Json = {
+  def query(method: String, arguments: String, reattemptCount: Int = 0): Json = {
 
     val request = Request.Post(restApiUrl)
       .bodyForm(
@@ -87,7 +88,7 @@ class Connection(val baseUrl: URL, val username: String, val userpass: String) {
           .add("response_type", "JSON")
           .add("rest_data", arguments)
           .build()
-      )
+      ).connectTimeout(60000)
 
     val response = request.execute().returnContent().asString()
 
@@ -98,7 +99,11 @@ class Connection(val baseUrl: URL, val username: String, val userpass: String) {
     }
     val json = result | jEmptyObject
     val error: String \/ Error = Parse.decodeEither[Error](json.toString())
-    if (error.isRight) {
+    if (error.isRight && reattemptCount == 0) {
+      //update session token and try again
+      session = login()
+      query(method, arguments, 1)
+    } else if (error.isRight) {
       val details = error | None
       throw new RuntimeException(s"An error occurred using session ${session}: $details")
     }
