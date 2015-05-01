@@ -31,6 +31,7 @@ libraryDependencies ++= List(
   "org.apache.httpcomponents" % "fluent-hc" % apacheHttpVersion,
   ("org.scalatest" %% "scalatest" % "2.2.2" % "test")
     .exclude("org.scala-lang.modules", "*")
-    .exclude("org.scala-lang", "scala-library")
+    .exclude("org.scala-lang", "scala-library"),
+  "org.apache.commons" % "commons-lang3" % "3.0"
 )
 

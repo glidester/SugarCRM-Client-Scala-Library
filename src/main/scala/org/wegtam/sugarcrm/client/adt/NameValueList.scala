@@ -7,6 +7,8 @@ import argonaut._, Argonaut._
 import org.apache.http.NameValuePair
 import org.apache.http.message.BasicNameValuePair
 
+import org.apache.commons.lang3.StringEscapeUtils
+
 /**
  * A mapper class for the `name_value_list` stuff returned by the sugarcrm api.
  */
@@ -40,7 +42,7 @@ class NameValueList extends Dynamic {
    *
    * @param name The name of the attribute.
    * @param value The value of the attribute.
-   * @return The set value.
+   * @return The set value.StringEscapeUtils
    */
   def updateDynamic(name: String)(value: Any) = {
     attributes.put(name, value)
@@ -62,7 +64,7 @@ object NameValueList {
   // Encoding of name value pairs.
   // FIXME We shouldn't encode null and boolean values as strings (see `cleanJson`)!
   implicit def NameValuePairEncodeJson: EncodeJson[NameValuePair] =
-    EncodeJson((nvp: NameValuePair) => ("value" := nvp.getValue) ->: ("name" := nvp.getName) ->: jEmptyObject)
+    EncodeJson((nvp: NameValuePair) => ("value" := StringEscapeUtils.escapeHtml4(nvp.getValue)) ->: ("name" := nvp.getName) ->: jEmptyObject)
 
   implicit def NameValueListEncodeJson: EncodeJson[NameValueList] =
     EncodeJson((nvl: NameValueList) => nvl.getSugarCompatibleMap.asJson)
